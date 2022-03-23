@@ -26,13 +26,13 @@ db.sequelize
         console.error(error);
     });
 
-db.sequelize.sync({ force: false }).then(() => {
-    console.log("Drop and re-sync db.");
-});
+// db.sequelize.sync({ force: false }).then(() => {
+//     console.log("Drop and re-sync db.");
+// });
 
 // set port, listen for requests
-const PORT = process.env.PORT || 8080;
-//https://gist.github.com/vapurrmaid/a111bf3fc0224751cb2f76532aac2465
+const PORT = process.env.PORT || 8000;
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
 });

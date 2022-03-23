@@ -1,8 +1,6 @@
-const db = require("../../node-6-assignment/models");
-const User = db.users;
-const Op = db.Sequelize.Op;
-const { createOne, updateOne, deleteOne, findOne, findAll, deleteAll } = require('../../node-6-assignment/repository/user-sequlizer')
 
+const { createUser, updateUser, deleteUser, findUser, findAllUser, deleteAllUser } = require('../repository/user-sequlizer')
+const { addAddress, updateAddress } = require('../repository/address-sequlizer')
 const { validationResult } = require('express-validator');
 
 // Create and Save a new User
@@ -15,14 +13,22 @@ exports.createUser = (req, res) => {
             phone: req.body.phone,
             gender: req.body.gender,
             age: req.body.age,
-            occupation: req.body.occupation,
-            city: req.body.city,
-            country: req.body.country
+            occupation: req.body.occupation
         };
         // Save User in the database
-        createOne(user).then((data) => {
+        createUser(user).then((data) => {
             if (data) {
-                res.send({ message: "User added successfully", data: data.dataValues });
+                if (data?.dataValues?.id) {
+                    const address = {
+                        UserId: data.dataValues.id,
+                        street: req.body.street,
+                        city: req.body.city,
+                        country: req.body.country
+                    };
+                    addAddress(address).then((userAddress) => {
+                        res.send({ message: "User added successfully" });
+                    })
+                }
             }
         }).catch(err => {
             res.status(500).send({
@@ -40,11 +46,19 @@ exports.updateUserDetails = async (req, res) => {
     try {
         const id = JSON.parse(req.params.id);
 
-        updateOne(req.body, id).then((data) => {
+        updateUser(req.body, id).then((data) => {
             if (data) {
-                res.send({
-                    message: "User details updated successfully."
-                });
+                const address = {
+                    UserId: id,
+                    street: req.body.street,
+                    city: req.body.city,
+                    country: req.body.country
+                };
+                updateAddress(address).then((userAddress) => {
+                    res.send({
+                        message: "User details updated successfully."
+                    });
+                })
             } else {
                 res.send({
                     message: `Cannot update User with id=${id}. Maybe User was not found or req.body is empty!`
@@ -63,7 +77,7 @@ exports.updateUserDetails = async (req, res) => {
 // Delete a User with the specified id in the request
 exports.deleteUser = (req, res) => {
     const id = JSON.parse(req.params.id);
-    deleteOne(id).then(num => {
+    deleteUser(id).then(num => {
         if (num == 1) {
             res.send({
                 message: "User was deleted successfully!"
@@ -83,7 +97,7 @@ exports.deleteUser = (req, res) => {
 // Find a single User with an id
 exports.findUser = (req, res) => {
     const id = JSON.parse(req.params.id);
-    findOne(id)
+    findUser(id)
         .then(data => {
             if (data) {
                 res.send(data);
@@ -102,7 +116,7 @@ exports.findUser = (req, res) => {
 // Retrieve all Users from the database.
 exports.findAllUser = (req, res) => {
     const searchby = req.query.search;
-    findAll(searchby).then(data => {
+    findAllUser(searchby).then(data => {
         res.send(data);
     })
         .catch(err => {
@@ -115,7 +129,7 @@ exports.findAllUser = (req, res) => {
 
 // Delete all Users from the database.
 exports.deleteAllUsers = (req, res) => {
-    deleteAll().then(data => {
+    deleteAllUser().then(data => {
         if (data) {
             res.send({ message: `Users were deleted successfully!` });
         }

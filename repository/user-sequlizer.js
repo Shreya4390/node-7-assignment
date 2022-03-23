@@ -1,48 +1,52 @@
 const db = require("../models");
-const User = db.users;
+var User = db.User;
 const Op = db.Sequelize.Op;
 
-async function createOne(data) {
+async function createUser(data) {
     const userdata = await User.create(data);
     return userdata;
 };
 
-async function updateOne(data, id) {
+async function updateUser(data, id) {
     const userdata = await User.update(data, {
         where: { id }
     });
     return userdata;
 };
 
-async function deleteOne(id) {
+async function deleteUser(id) {
     const userdata = await User.destroy({
         where: { id }
     });
     return userdata;
 };
 
-async function findOne(id) {
+async function findUser(id) {
     const userdata = await User.findOne({
+        include: [{
+            model: db.Address,
+        }],
         where: { id }
     });
     return userdata;
 };
 
-async function findAll(search) {
+async function findAllUser(search) {
     const userdata = await User.findAll({
-        where: {
-            [Op.and]: {
-                [Op.or]: {
-                    occupation: {
-                        [Op.in]: ['self employed', 'job']
-                    },
-                    age: {
-                        [Op.between]: [44, 90]
-                    }
-                },
-            },
-            [Op.or]: {
+        include: [{
+            model: db.Address,
+            where: {
                 country: { [Op.like]: `%${search}%` }
+            }
+        }],
+        where: {
+            [Op.or]: {
+                occupation: {
+                    [Op.in]: ['self employed', 'job']
+                },
+                age: {
+                    [Op.between]: [44, 90]
+                }
             }
         }
     });
@@ -50,7 +54,7 @@ async function findAll(search) {
     return userdata;
 };
 
-async function deleteAll() {
+async function deleteAllUser() {
     const userdata = User.destroy({
         where: {},
         truncate: false
@@ -59,10 +63,10 @@ async function deleteAll() {
 };
 
 module.exports = {
-    createOne,
-    updateOne,
-    deleteOne,
-    findOne,
-    findAll,
-    deleteAll
+    createUser,
+    updateUser,
+    deleteUser,
+    findUser,
+    findAllUser,
+    deleteAllUser
 }
